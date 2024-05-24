@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace лр3
 {
-    public class PopulationData
+    internal class PlotForecast
     {
-        public int Year {  get; set; }
-        public int Population { get; set; }
     }
 }
