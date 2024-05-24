@@ -42,6 +42,20 @@ namespace лр3
                 MessageBox.Show("Прогноз не выполнен!");
             }
         }
+        private void UpdateGrowthData()
+        {
+            if (populationDataManager != null)
+            {
+                var (maxIncrease, maxIncreaseYear, maxDecrease, maxDecreaseYear) = populationDataManager.CalculateGrowth();
+                textBox1.Text = $"{maxIncrease:F2}% ({maxIncreaseYear})";
+                textBox4.Text = $"{maxDecrease:F2}% ({maxDecreaseYear})";
+            }
+            else
+            {
+                textBox1.Text = string.Empty;
+                textBox4.Text = string.Empty;
+            }
+        }
         private void button1_Click(object sender, EventArgs e)
         {
             openFileDialog1.Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*";
@@ -91,20 +105,6 @@ namespace лр3
             else
             {
                 MessageBox.Show("Ошибка ввода данных!");
-            }
-        }
-        private void UpdateGrowthData()
-        {
-            if (populationDataManager != null)
-            {
-                var (maxIncrease, maxIncreaseYear, maxDecrease, maxDecreaseYear) = populationDataManager.CalculateGrowth();
-                textBox1.Text = $"{maxIncrease:F2}% ({maxIncreaseYear})";
-                textBox4.Text = $"{maxDecrease:F2}% ({maxDecreaseYear})";
-            }
-            else
-            {
-                textBox1.Text = string.Empty;
-                textBox4.Text = string.Empty;
             }
         }
     }
