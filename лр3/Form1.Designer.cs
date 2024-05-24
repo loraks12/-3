@@ -117,7 +117,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(357, 26);
             this.label1.TabIndex = 8;
-            this.label1.Text = "Маскимальный процент прироста";
+            this.label1.Text = "Максимальный процент прироста";
             // 
             // label2
             // 
@@ -127,7 +127,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(329, 26);
             this.label2.TabIndex = 9;
-            this.label2.Text = "Маскимальный процент убыли";
+            this.label2.Text = "Максимальный процент убыли";
             // 
             // textBox2
             // 
@@ -172,7 +172,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(478, 26);
             this.label4.TabIndex = 14;
-            this.label4.Text = "Маскимальный процент изменения миграции";
+            this.label4.Text = "Максимальный процент изменения миграции";
             // 
             // textBox4
             // 
