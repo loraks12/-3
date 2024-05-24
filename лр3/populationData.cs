@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace лр3
 {
-    public class populationData
+    public class PopulationData
     {
-        public int Year { get; set; }
+        public int Year {  get; set; }
         public int Population { get; set; }
     }
 }
