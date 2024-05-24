@@ -13,10 +13,34 @@ namespace лр3
 {
     public partial class Form1 : Form
     {
-        private DataManager dataManager;
+        private DataManager populationDataManager;
         public Form1()
         {
             InitializeComponent();
+        }
+        private void PlotForecastGraph(List<PopulationData> forecast)
+        {
+            if (forecast != null && forecast.Any())
+            {
+                var series = new System.Windows.Forms.DataVisualization.Charting.Series
+                {
+                    Name = "Forecast",
+                    Color = System.Drawing.Color.Red,
+                    IsVisibleInLegend = true,
+                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
+                };
+
+                foreach (var data in forecast)
+                {
+                    series.Points.AddXY(data.Year, data.Population);
+                }
+
+                chart1.Series.Add(series);
+            }
+            else
+            {
+                MessageBox.Show("Прогноз не выполнен!");
+            }
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -24,13 +48,13 @@ namespace лр3
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string filePath = openFileDialog1.FileName;
-                dataManager = new DataManager(filePath);
+                populationDataManager = new DataManager(filePath);
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (dataManager != null)
+            if (populationDataManager != null)
             {
                 chart1.Series.Clear();
                 var series = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -41,7 +65,7 @@ namespace лр3
                     ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
                 };
 
-                foreach (var data in dataManager.PopulationRecords)
+                foreach (var data in populationDataManager.PopulationRecords)
                 {
                     series.Points.AddXY(data.Year, data.Population);
                 }
@@ -53,6 +77,20 @@ namespace лр3
                 MessageBox.Show("Данные не загружены!");
             }
 
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            // Прогнозирование
+            if (populationDataManager != null && int.TryParse(textBox3.Text, out int yearsToForecast))
+            {
+                List<PopulationData> forecast = populationDataManager.PerformForecast(yearsToForecast);
+                PlotForecastGraph(forecast);
+            }
+            else
+            {
+                MessageBox.Show("Ошибка ввода данных!");
+            }
         }
     }
 }
