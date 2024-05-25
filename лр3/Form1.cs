@@ -13,10 +13,67 @@ namespace лр3
 {
     public partial class Form1 : Form
     {
-        private DataManager dataManager;
+        private DataManager populationDataManager;
         public Form1()
         {
             InitializeComponent();
+            InitializeDataGridView();
+        }
+        private void InitializeDataGridView()
+        {
+            dataGridView1.ColumnCount = 2;
+            dataGridView1.Columns[0].Name = "Year";
+            dataGridView1.Columns[1].Name = "Population";
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
+        private void PlotForecastGraph(List<PopulationData> forecast)
+        {
+            if (forecast != null && forecast.Any())
+            {
+                var series = new System.Windows.Forms.DataVisualization.Charting.Series
+                {
+                    Name = "Forecast",
+                    Color = System.Drawing.Color.Red,
+                    IsVisibleInLegend = true,
+                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
+                };
+
+                foreach (var data in forecast)
+                {
+                    series.Points.AddXY(data.Year, data.Population);
+                }
+
+                chart1.Series.Add(series);
+            }
+            else
+            {
+                MessageBox.Show("Прогноз не выполнен!");
+            }
+        }
+        private void PopulateDataGridView()
+        {
+            if (populationDataManager != null)
+            {
+                dataGridView1.Rows.Clear();
+                foreach (var record in populationDataManager.PopulationRecords)
+                {
+                    dataGridView1.Rows.Add(record.Year, record.Population);
+                }
+            }
+        }
+        private void UpdateGrowthData()
+        {
+            if (populationDataManager != null)
+            {
+                var (maxIncrease, maxIncreaseYear, maxDecrease, maxDecreaseYear) = populationDataManager.CalculateGrowth();
+                textBox1.Text = $"{maxIncrease:F2}% ({maxIncreaseYear})";
+                textBox4.Text = $"{maxDecrease:F2}% ({maxDecreaseYear})";
+            }
+            else
+            {
+                textBox1.Text = string.Empty;
+                textBox4.Text = string.Empty;
+            }
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -24,13 +81,15 @@ namespace лр3
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string filePath = openFileDialog1.FileName;
-                dataManager = new DataManager(filePath);
+                populationDataManager = new DataManager(filePath);
             }
+            UpdateGrowthData();
+            PopulateDataGridView();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (dataManager != null)
+            if (populationDataManager != null)
             {
                 chart1.Series.Clear();
                 var series = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -41,7 +100,7 @@ namespace лр3
                     ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
                 };
 
-                foreach (var data in dataManager.PopulationRecords)
+                foreach (var data in populationDataManager.PopulationRecords)
                 {
                     series.Points.AddXY(data.Year, data.Population);
                 }
@@ -53,6 +112,20 @@ namespace лр3
                 MessageBox.Show("Данные не загружены!");
             }
 
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            // Прогнозирование
+            if (populationDataManager != null && int.TryParse(textBox3.Text, out int yearsToForecast))
+            {
+                List<PopulationData> forecast = populationDataManager.PerformForecast(yearsToForecast);
+                PlotForecastGraph(forecast);
+            }
+            else
+            {
+                MessageBox.Show("Ошибка ввода данных!");
+            }
         }
     }
 }

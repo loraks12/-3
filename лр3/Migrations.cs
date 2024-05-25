@@ -47,8 +47,6 @@ namespace лр3
 
         public void PlotMigrationTrend()
         {
-            // You can use a charting library like 'System.Windows.Forms.DataVisualization' or any other library to plot the data
-            // Let's say we are using console output for demonstration
             Console.WriteLine("Plotting migration trends...");
             Console.WriteLine("Not implemented for demo purposes.");
         }
