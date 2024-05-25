@@ -17,6 +17,14 @@ namespace лр3
         public Form1()
         {
             InitializeComponent();
+            InitializeDataGridView();
+        }
+        private void InitializeDataGridView()
+        {
+            dataGridView1.ColumnCount = 2;
+            dataGridView1.Columns[0].Name = "Year";
+            dataGridView1.Columns[1].Name = "Population";
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
         private void PlotForecastGraph(List<PopulationData> forecast)
         {
@@ -42,6 +50,17 @@ namespace лр3
                 MessageBox.Show("Прогноз не выполнен!");
             }
         }
+        private void PopulateDataGridView()
+        {
+            if (populationDataManager != null)
+            {
+                dataGridView1.Rows.Clear();
+                foreach (var record in populationDataManager.PopulationRecords)
+                {
+                    dataGridView1.Rows.Add(record.Year, record.Population);
+                }
+            }
+        }
         private void UpdateGrowthData()
         {
             if (populationDataManager != null)
@@ -63,8 +82,9 @@ namespace лр3
             {
                 string filePath = openFileDialog1.FileName;
                 populationDataManager = new DataManager(filePath);
-                UpdateGrowthData();
             }
+            UpdateGrowthData();
+            PopulateDataGridView();
         }
 
         private void button2_Click(object sender, EventArgs e)
