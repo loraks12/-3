@@ -10,12 +10,13 @@ namespace лр3
 {
     public class DataManager
     {
-        public List<PopulationData> PopulationRecords {  get; private set; }
+        public List<PopulationData> PopulationRecords { get; private set; }
 
-        public DataManager(string filePath) {
-            
+        public DataManager(string filePath)
+        {
             LoadData(filePath);
         }
+
         private void LoadData(string filePath)
         {
             var lines = File.ReadAllLines(filePath);
@@ -28,6 +29,7 @@ namespace лр3
                                       })
                                       .ToList();
         }
+
         public (double maxIncrease, int maxIncreaseYear, double maxDecrease, int maxDecreaseYear) CalculateGrowth()
         {
             double maxIncrease = 0;
@@ -37,7 +39,7 @@ namespace лр3
 
             for (int i = 1; i < PopulationRecords.Count; i++)
             {
-                double change = ((double)(PopulationRecords[i].Population - PopulationRecords[i - 1].Population) 
+                double change = ((double)(PopulationRecords[i].Population - PopulationRecords[i - 1].Population)
                     / PopulationRecords[i - 1].Population) * 100;
                 if (change > maxIncrease)
                 {
@@ -53,6 +55,7 @@ namespace лр3
 
             return (maxIncrease, maxIncreaseYear, maxDecrease, maxDecreaseYear);
         }
+
         public List<PopulationData> PerformForecast(int yearsToForecast)
         {
             var forecast = new List<PopulationData>();
