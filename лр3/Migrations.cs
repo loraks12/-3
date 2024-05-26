@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Data;
+using System.Windows.Forms.DataVisualization.Charting;
+using System.Windows.Forms;
 
 namespace лр3
 {
@@ -93,6 +95,40 @@ namespace лр3
             }
 
             return forecast;
+        }
+        public void PlotForecastGraphMigration(Chart chart, List<MigrationData> forecast)
+        {
+            if (forecast != null && forecast.Any())
+            {
+                var seriesImmigrants = new System.Windows.Forms.DataVisualization.Charting.Series
+                {
+                    Name = "Immigrants Forecast",
+                    Color = System.Drawing.Color.GreenYellow,
+                    IsVisibleInLegend = true,
+                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
+                };
+
+                var seriesEmigrants = new System.Windows.Forms.DataVisualization.Charting.Series
+                {
+                    Name = "Emigrants Forecast",
+                    Color = System.Drawing.Color.IndianRed,
+                    IsVisibleInLegend = true,
+                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
+                };
+
+                foreach (var data in forecast)
+                {
+                    seriesImmigrants.Points.AddXY(data.Year, data.Immigrants);
+                    seriesEmigrants.Points.AddXY(data.Year, data.Emigrants);
+                }
+
+                chart.Series.Add(seriesImmigrants);
+                chart.Series.Add(seriesEmigrants);
+            }
+            else
+            {
+                MessageBox.Show("Прогноз не выполнен!");
+            }
         }
     }
 }

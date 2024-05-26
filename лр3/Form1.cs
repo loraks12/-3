@@ -8,8 +8,8 @@ namespace лр3
 {
     public partial class Form1 : Form
     {
-        private DataManager populationDataManager;
-        private Migrations populationMigration;
+        private DataManager population;
+        private Migrations migration;
 
         public Form1()
         {
@@ -18,11 +18,6 @@ namespace лр3
 
         private void InitializeDataGridView()
         {
-            //dataGridView1.ColumnCount = 3;
-            //dataGridView1.Columns[0].Name = "Year";
-            //dataGridView1.Columns[1].Name = "Immigrants/Population";
-            //dataGridView1.Columns[2].Name = "Emigrants";
-            //dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.ColumnCount = 3;
             dataGridView1.Columns[0].Name = "Year";
             dataGridView1.Columns[1].Name = checkBox1.Checked ? "Immigrants" : "Population";
@@ -30,80 +25,20 @@ namespace лр3
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
-        private void PlotForecastGraphPopulation(List<PopulationData> forecast)
-        {
-            if (forecast != null && forecast.Any())
-            {
-                var series = new System.Windows.Forms.DataVisualization.Charting.Series
-                {
-                    Name = "Population Forecast",
-                    Color = System.Drawing.Color.Red,
-                    IsVisibleInLegend = true,
-                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
-                };
-
-                foreach (var data in forecast)
-                {
-                    series.Points.AddXY(data.Year, data.Population);
-                }
-
-                chart1.Series.Add(series);
-            }
-            else
-            {
-                MessageBox.Show("Прогноз не выполнен!");
-            }
-        }
-
-        private void PlotForecastGraphMigration(List<MigrationData> forecast)
-        {
-            if (forecast != null && forecast.Any())
-            {
-                var seriesImmigrants = new System.Windows.Forms.DataVisualization.Charting.Series
-                {
-                    Name = "Immigrants Forecast",
-                    Color = System.Drawing.Color.GreenYellow,
-                    IsVisibleInLegend = true,
-                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
-                };
-
-                var seriesEmigrants = new System.Windows.Forms.DataVisualization.Charting.Series
-                {
-                    Name = "Emigrants Forecast",
-                    Color = System.Drawing.Color.IndianRed,
-                    IsVisibleInLegend = true,
-                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
-                };
-
-                foreach (var data in forecast)
-                {
-                    seriesImmigrants.Points.AddXY(data.Year, data.Immigrants);
-                    seriesEmigrants.Points.AddXY(data.Year, data.Emigrants);
-                }
-
-                chart1.Series.Add(seriesImmigrants);
-                chart1.Series.Add(seriesEmigrants);
-            }
-            else
-            {
-                MessageBox.Show("Прогноз не выполнен!");
-            }
-        }
-
         private void PopulateDataGridView()
         {
-            if (checkBox1.Checked && populationMigration != null)
+            if (checkBox1.Checked && migration != null)
             {
                 dataGridView1.Rows.Clear();
-                foreach (var record in populationMigration.MigrationRecords)
+                foreach (var record in migration.MigrationRecords)
                 {
                     dataGridView1.Rows.Add(record.Year, record.Immigrants, record.Emigrants);
                 }
             }
-            else if (populationDataManager != null)
+            else if (population != null)
             {
                 dataGridView1.Rows.Clear();
-                foreach (var record in populationDataManager.PopulationRecords)
+                foreach (var record in population.PopulationRecords)
                 {
                     dataGridView1.Rows.Add(record.Year, record.Population, DBNull.Value);
                 }
@@ -112,16 +47,16 @@ namespace лр3
 
         private void UpdateGrowthData()
         {
-            if (checkBox1.Checked && populationMigration != null)
+            if (checkBox1.Checked && migration != null)
             {
-                var (maxChange, maxChangeYear) = populationMigration.CalculateMigrationChange();
+                var (maxChange, maxChangeYear) = migration.CalculateMigrationChange();
                 textBox2.Text = $"{maxChange:F2}% ({maxChangeYear})";
                 textBox4.Text = string.Empty;
                 textBox1.Text = string.Empty;
             }
-            else if (populationDataManager != null)
+            else if (population != null)
             {
-                var (maxIncrease, maxIncreaseYear, maxDecrease, maxDecreaseYear) = populationDataManager.CalculateGrowth();
+                var (maxIncrease, maxIncreaseYear, maxDecrease, maxDecreaseYear) = population.CalculateGrowth();
                 textBox1.Text = $"{maxIncrease:F2}% ({maxIncreaseYear})";
                 textBox4.Text = $"{maxDecrease:F2}% ({maxDecreaseYear})";
             }
@@ -147,11 +82,11 @@ namespace лр3
                 string filepath = openFileDialog1.FileName;
                 if (checkBox1.Checked)
                 {
-                    populationMigration = new Migrations(filepath);
+                    migration = new Migrations(filepath);
                 }
                 else
                 {
-                    populationDataManager = new DataManager(filepath);
+                    population = new DataManager(filepath);
                 }
             }
             UpdateGrowthData();
@@ -160,15 +95,15 @@ namespace лр3
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (checkBox1.Checked && populationMigration != null && int.TryParse(textBox3.Text, out int yearsToForecast))
+            if (checkBox1.Checked && migration != null && int.TryParse(textBox3.Text, out int yearsToForecast))
             {
-                List<MigrationData> forecast = populationMigration.PerformForecast(yearsToForecast);
-                PlotForecastGraphMigration(forecast);
+                List<MigrationData> forecast = migration.PerformForecast(yearsToForecast);
+                migration.PlotForecastGraphMigration(chart1, forecast);
             }
-            else if (populationDataManager != null && int.TryParse(textBox3.Text, out int yearstoForecast))
+            else if (population != null && int.TryParse(textBox3.Text, out int yearstoForecast))
             {
-                List<PopulationData> forecast = populationDataManager.PerformForecast(yearstoForecast);
-                PlotForecastGraphPopulation(forecast);
+                List<PopulationData> forecast = population.PerformForecast(yearstoForecast);
+                population.PlotForecastGraphPopulation(chart1, forecast);
             }
             else
             {
@@ -178,7 +113,7 @@ namespace лр3
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            if (checkBox1.Checked && populationMigration != null)
+            if (checkBox1.Checked && migration != null)
             {
                 chart1.Series.Clear();
                 var seriesImmigrants = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -197,7 +132,7 @@ namespace лр3
                     ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
                 };
 
-                foreach (var data in populationMigration.MigrationRecords)
+                foreach (var data in migration.MigrationRecords)
                 {
                     seriesImmigrants.Points.AddXY(data.Year, data.Immigrants);
                     seriesEmigrants.Points.AddXY(data.Year, data.Emigrants);
@@ -206,7 +141,7 @@ namespace лр3
                 chart1.Series.Add(seriesImmigrants);
                 chart1.Series.Add(seriesEmigrants);
             }
-            else if (populationDataManager != null)
+            else if (population != null)
             {
                 chart1.Series.Clear();
                 var series = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -217,7 +152,7 @@ namespace лр3
                     ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
                 };
 
-                foreach (var data in populationDataManager.PopulationRecords)
+                foreach (var data in population.PopulationRecords)
                 {
                     series.Points.AddXY(data.Year, data.Population);
                 }
