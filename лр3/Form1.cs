@@ -135,6 +135,7 @@ namespace лр3
         private void button1_Click(object sender, EventArgs e)
         {
             InitializeDataGridView();
+
             textBox1.Text = string.Empty;
             textBox2.Text= string.Empty;
             textBox3.Text= string.Empty;
