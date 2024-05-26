@@ -16,18 +16,18 @@ namespace лр3
         {
             LoadData(filePath);
         }
-
         private void LoadData(string filePath)
         {
             var lines = File.ReadAllLines(filePath);
-            MigrationRecords = lines.Select(line => line.Split(','))
-                                    .Select(parts => new MigrationData
-                                    {
-                                        Year = int.Parse(parts[0]),
-                                        Immigrants = int.Parse(parts[1]),
-                                        Emigrants = int.Parse(parts[2])
-                                    })
-                                    .ToList();
+            MigrationRecords = lines.Skip(1) // Пропускаем заголовок
+                                      .Select(line => line.Split('-'))
+                                      .Select(parts => new MigrationData
+                                      {
+                                          Year = int.Parse(parts[0]),
+                                          Immigrants = int.Parse(parts[1]),
+                                          Emigrants = int.Parse(parts[2])
+                                      })
+                                      .ToList();
         }
         public (double maxChange, int maxChangeYear) CalculateMigrationChange()
         {

@@ -21,7 +21,7 @@ namespace лр3
         {
             var lines = File.ReadAllLines(filePath);
             PopulationRecords = lines.Skip(1) // Пропускаем заголовок
-                                      .Select(line => line.Split(','))
+                                      .Select(line => line.Split('-'))
                                       .Select(parts => new PopulationData
                                       {
                                           Year = int.Parse(parts[0]),
