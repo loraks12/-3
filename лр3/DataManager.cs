@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Windows.Forms.DataVisualization.Charting;
+using System.Windows.Forms;
 
 namespace лр3
 {
@@ -20,8 +22,8 @@ namespace лр3
         private void LoadData(string filePath)
         {
             var lines = File.ReadAllLines(filePath);
-            PopulationRecords = lines.Skip(1) // Пропускаем заголовок
-                                      .Select(line => line.Split(','))
+            PopulationRecords = lines.Skip(1) // Пропуск заголовка
+                                      .Select(line => line.Split('-'))
                                       .Select(parts => new PopulationData
                                       {
                                           Year = int.Parse(parts[0]),
@@ -79,6 +81,30 @@ namespace лр3
             }
 
             return forecast;
+        }
+        public void PlotForecastGraphPopulation(Chart chart, List<PopulationData> forecast)
+        {
+            if (forecast != null && forecast.Any())
+            {
+                var series = new System.Windows.Forms.DataVisualization.Charting.Series
+                {
+                    Name = "Population Forecast",
+                    Color = System.Drawing.Color.Red,
+                    IsVisibleInLegend = true,
+                    ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line
+                };
+
+                foreach (var data in forecast)
+                {
+                    series.Points.AddXY(data.Year, data.Population);
+                }
+
+                chart.Series.Add(series);
+            }
+            else
+            {
+                MessageBox.Show("Прогноз не выполнен!");
+            }
         }
     }
 }
