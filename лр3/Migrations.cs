@@ -10,78 +10,89 @@ namespace лр3
 {
     internal class Migrations
     {
-        private DataTable data;
+        public List<MigrationData> MigrationRecords { get; private set; }
 
         public Migrations(string filePath)
         {
-            data = ReadDataFromFile(filePath);
+            LoadData(filePath);
         }
 
-        private DataTable ReadDataFromFile(string filePath)
+        private void LoadData(string filePath)
         {
-            DataTable dt = new DataTable();
-            dt.Columns.Add("Year", typeof(int));
-            dt.Columns.Add("Immigrants", typeof(int));
-            dt.Columns.Add("Emigrants", typeof(int));
+            var lines = File.ReadAllLines(filePath);
+            MigrationRecords = lines.Select(line => line.Split(','))
+                                    .Select(parts => new MigrationData
+                                    {
+                                        Year = int.Parse(parts[0]),
+                                        Immigrants = int.Parse(parts[1]),
+                                        Emigrants = int.Parse(parts[2])
+                                    })
+                                    .ToList();
+        }
+        public (double maxChange, int maxChangeYear) CalculateMigrationChange()
+        {
+            double maxChange = 0;
+            int maxChangeYear = 0;
 
-            string[] lines = File.ReadAllLines(filePath);
-            foreach (string line in lines)
+            for (int i = 1; i < MigrationRecords.Count; i++)
             {
-                string[] parts = line.Split(',');
-                int year = int.Parse(parts[0]);
-                int immigrants = int.Parse(parts[1]);
-                int emigrants = int.Parse(parts[2]);
-                dt.Rows.Add(year, immigrants, emigrants);
-            }
+                double previousMigration = MigrationRecords[i - 1].Immigrants - MigrationRecords[i - 1].Emigrants;
+                double currentMigration = MigrationRecords[i].Immigrants - MigrationRecords[i].Emigrants;
 
-            return dt;
-        }
-
-        public void DisplayData()
-        {
-            foreach (DataRow row in data.Rows)
-            {
-                Console.WriteLine($"Year: {row["Year"]}, Immigrants: {row["Immigrants"]}, Emigrants: {row["Emigrants"]}");
-            }
-        }
-
-        public void PlotMigrationTrend()
-        {
-            Console.WriteLine("Plotting migration trends...");
-            Console.WriteLine("Not implemented for demo purposes.");
-        }
-
-        public int CalculateMaxMigrationChange()
-        {
-            int maxChange = 0;
-            foreach (DataRow row in data.Rows)
-            {
-                int immigrants = Convert.ToInt32(row["Immigrants"]);
-                int emigrants = Convert.ToInt32(row["Emigrants"]);
-                int migrationChange = Math.Abs(immigrants - emigrants);
-
-                if (migrationChange > maxChange)
+                if (previousMigration != 0)
                 {
-                    maxChange = migrationChange;
+                    double change = ((currentMigration - previousMigration) / Math.Abs(previousMigration)) * 100;
+
+                    if (Math.Abs(change) > Math.Abs(maxChange))
+                    {
+                        maxChange = change;
+                        maxChangeYear = MigrationRecords[i].Year;
+                    }
                 }
             }
 
-            return maxChange;
+            return (maxChange, maxChangeYear);
         }
 
-        public void ForecastMigration(int nYears)
+        public List<MigrationData> PerformForecast(int yearsToForecast)
         {
-            int lastYear = Convert.ToInt32(data.Rows[data.Rows.Count - 1]["Year"]);
-            int lastImmigrants = Convert.ToInt32(data.Rows[data.Rows.Count - 1]["Immigrants"]);
-            int lastEmigrants = Convert.ToInt32(data.Rows[data.Rows.Count - 1]["Emigrants"]);
+            var forecast = new List<MigrationData>();
+            int lastYear = MigrationRecords.Last().Year;
+            double[] movingAverageImmigrants = new double[MigrationRecords.Count];
+            double[] movingAverageEmigrants = new double[MigrationRecords.Count];
 
-            for (int i = 1; i <= nYears; i++)
+            // Расчёт скользящей средней для иммигрантов
+            for (int i = 2; i < MigrationRecords.Count; i++)
             {
-                int forecastedImmigrants = lastImmigrants + (1000 * i); // Assuming an increase of 1000 immigrants per year
-                int forecastedEmigrants = lastEmigrants + (500 * i); // Assuming an increase of 500 emigrants per year
-
-                Console.WriteLine($"Forecast for year {lastYear + i}: Immigrants - {forecastedImmigrants}, Emigrants - {forecastedEmigrants}");
+                movingAverageImmigrants[i] = (MigrationRecords[i].Immigrants + MigrationRecords[i - 1].Immigrants + MigrationRecords[i - 2].Immigrants) / 3.0;
+                movingAverageEmigrants[i] = (MigrationRecords[i].Emigrants + MigrationRecords[i - 1].Emigrants + MigrationRecords[i - 2].Emigrants) / 3.0;
             }
+
+            // Экстраполяция
+            for (int i = 0; i < yearsToForecast; i++)
+            {
+                lastYear++;
+                double forecastedImmigrants = (movingAverageImmigrants[movingAverageImmigrants.Length - 1] +
+                                               movingAverageImmigrants[movingAverageImmigrants.Length - 2] +
+                                               movingAverageImmigrants[movingAverageImmigrants.Length - 3]) / 3.0;
+                double forecastedEmigrants = (movingAverageEmigrants[movingAverageEmigrants.Length - 1] +
+                                              movingAverageEmigrants[movingAverageEmigrants.Length - 2] +
+                                              movingAverageEmigrants[movingAverageEmigrants.Length - 3]) / 3.0;
+                forecast.Add(new MigrationData
+                {
+                    Year = lastYear,
+                    Immigrants = (int)forecastedImmigrants,
+                    Emigrants = (int)forecastedEmigrants
+                });
+
+                Array.Copy(movingAverageImmigrants, 1, movingAverageImmigrants, 0, movingAverageImmigrants.Length - 1);
+                movingAverageImmigrants[movingAverageImmigrants.Length - 1] = forecastedImmigrants;
+
+                Array.Copy(movingAverageEmigrants, 1, movingAverageEmigrants, 0, movingAverageEmigrants.Length - 1);
+                movingAverageEmigrants[movingAverageEmigrants.Length - 1] = forecastedEmigrants;
+            }
+
+            return forecast;
         }
     }
 }
